@@ -14,5 +14,6 @@ from .bot2 import Bot2
 from .bot3 import Bot3
 from .bot4 import Bot4
 from .bot5 import Bot5
+from .combined_heuristics_bot import CombinedHeuristicsBot
 
-__all__ = ["RandBot", "AlphaBetaBot", "RdeepBot", "MLDataBot", "MLPlayingBot", "train_ML_model", "SchnapsenServer", "MiniMaxBot", "BullyBot"]
+__all__ = ["RandBot", "AlphaBetaBot", "RdeepBot", "MLDataBot", "MLPlayingBot", "train_ML_model", "SchnapsenServer", "MiniMaxBot", "BullyBot", "RdeepAlphaBeta", "Bot1", "Bot2", "Bot3", "Bot4", "Bot5", "CombinedHeuristicsBot"]

@@ -33,48 +33,18 @@ class Bot2(Bot):
 
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
         if perspective.get_phase() == GamePhase.ONE:
-            game_history = perspective.get_game_history()
-            if not len(game_history) == 1:
-                game_history.pop()
-                last_game = game_history.pop()
-                is_leader_in_previous_trick = last_game[0].am_i_leader()
-                played_marriage_in_previous_trick = False
-                if not last_game[1].is_trump_exchange() and last_game[1].as_partial().leader_move.is_marriage():
-                    played_marriage_in_previous_trick = True
-
-                valid_moves = [move for move in perspective.valid_moves()]
-
-                if is_leader_in_previous_trick and played_marriage_in_previous_trick:
-                    for move in valid_moves:
-                        if str(move.cards[0].rank) == "ACE" or (str(move.cards[0].suit) == str(perspective.get_trump_suit()) and str(move.cards[0].rank) in ["KING", "TEN", "ACE"]):
-                            return move
-                
-                else:
-                    can_play_marriage = False
-                    can_play_strong_trump = False
-                    has_ace = False
-                    trump_marriage = False
-                    chosen_move = None
-
-                    for move in valid_moves:
-                        if move.is_marriage():
-                            can_play_marriage = True
-                            chosen_move = move
-                            if str(move.king_card.suit) == str(perspective.get_trump_suit()):
-                                trump_marriage = True
-                            break
-                    
+            valid_moves = [move for move in perspective.valid_moves()]
+            trump = perspective.get_trump_suit()
+            for move in valid_moves:
+                if move.is_marriage():
+                    trump_marriage = str(move.king_card.suit) == str(trump)
                     hand = perspective.get_hand().get_cards()
-                    for card in hand:
-                        if str(card.rank) == "ACE":
-                            has_ace = True
-                            break
-                        if str(card.suit) == perspective.get_trump_suit() and str(card.rank) in ["KING", "TEN", "ACE"]:
-                            can_play_strong_trump = True
-                            break
-
-                    if can_play_marriage and (can_play_strong_trump or has_ace or trump_marriage):
-                        return chosen_move
+                    has_followup = any(
+                        str(card.rank) == "ACE" or (str(card.suit) == str(trump) and str(card.rank) in ["KING", "TEN", "ACE"])
+                        for card in hand
+                    )
+                    if trump_marriage or has_followup:
+                        return move
 
             return self.delegate_phase1.get_move(perspective, leader_move)
         

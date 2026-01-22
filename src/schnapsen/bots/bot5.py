@@ -30,20 +30,23 @@ class Bot5(Bot):
         self.delegate_phase2 = AlphaBetaBot()
 
 
+    @staticmethod
+    def rank_value(rank: str) -> int:
+        return {"JACK": 2, "QUEEN": 3, "KING": 4, "TEN": 10, "ACE": 11}[rank]
+
+
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
         if perspective.get_phase() == GamePhase.ONE:
-            if perspective.get_talon_size() <= 2:
-                valid_moves = [move.as_regular_move() for move in perspective.valid_moves() if move.is_regular_move()]
+            valid_moves = [move for move in perspective.valid_moves()]
+            trump = perspective.get_trump_suit()
+            if perspective.get_talon_size() <= 2 and not perspective.am_i_leader():
+                regular_moves = [move.as_regular_move() for move in valid_moves if move.is_regular_move()]
+                lead_card = leader_move.cards[0]
 
-                if not perspective.am_i_leader():
-                    rank_values = {"JACK" : 2, "QUEEN" : 3, "KING" : 4, "TEN" : 10, "ACE" : 11}
-
-                    for move in valid_moves:    
-                        if str(leader_move.cards[0].suit) != str(perspective.get_trump_suit()):
-                            if rank_values[str(move.card.rank)] > rank_values[str(leader_move.cards[0].rank)] or str(move.card.suit) == str(perspective.get_trump_suit()):
-                                return move
-                        elif str(leader_move.cards[0].suit) == str(perspective.get_trump_suit()) and rank_values[str(move.card.rank)] > rank_values[str(leader_move.cards[0].rank)]:
-                            return move
+                for move in regular_moves:
+                    if ((str(move.card.suit) == str(trump) and str(lead_card.suit) != str(trump))
+                        or (str(move.card.suit) == str(lead_card.suit) and self.rank_value(str(move.card.rank)) > self.rank_value(str(lead_card.rank)))):
+                        return move
 
             return self.delegate_phase1.get_move(perspective, leader_move)
         elif perspective.get_phase() == GamePhase.TWO:

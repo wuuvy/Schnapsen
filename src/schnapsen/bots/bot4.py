@@ -33,21 +33,22 @@ class Bot4(Bot):
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
         if perspective.get_phase() == GamePhase.ONE:
             valid_moves = [move for move in perspective.valid_moves()]
-            trump_exchange = None
-            has_trump_queen = False
-            has_trump_king = False
+            trump = perspective.get_trump_suit()
 
-            for move in valid_moves:
-                if move.is_trump_exchange():
-                    trump_exchange = move
-                if str(move.cards[0].rank) == "KING" and str(move.cards[0].suit) == str(perspective.get_trump_suit()):
-                    has_trump_king = True
-                if str(move.cards[0].rank) == "QUEEN" and str(move.cards[0].suit) == str(perspective.get_trump_suit()):
-                    has_trump_queen = True
+            if perspective.am_i_leader():
+                exchange = None
+                for move in valid_moves:
+                    if move.is_trump_exchange():
+                        exchange = move
+                        break
 
-            if perspective.am_i_leader() and trump_exchange != None:
-                if str(perspective.get_trump_card().rank) in ["ACE", "TEN"] or (str(perspective.get_trump_card().rank) in ["KING", "QUEEN"] and (has_trump_queen or has_trump_king)):
-                    return trump_exchange
+                if exchange:
+                    trump_card = perspective.get_trump_card()
+                    has_king = any(str(card.rank) == "KING" and str(card.suit) == str(trump) for card in perspective.get_hand().get_cards())
+                    has_queen = any(str(card.rank) == "QUEEN" and str(card.suit) == str(trump) for card in perspective.get_hand().get_cards())
+
+                    if (str(trump_card.rank) in ["ACE", "TEN"] or (str(trump_card.rank) in ["KING", "QUEEN"] and (has_king or has_queen))):
+                        return exchange
 
             return self.delegate_phase1.get_move(perspective, leader_move)
         elif perspective.get_phase() == GamePhase.TWO:

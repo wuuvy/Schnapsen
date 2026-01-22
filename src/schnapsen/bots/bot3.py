@@ -12,12 +12,6 @@ class Bot3(Bot):
     
     (this heuristic helps manage your high cards as to maximise your winnings and minimise the ones of your opponent.
     The idea is to ensure that high cards and trumps are not wasted on capturing the lead, but rather used once it is obtained for stronger play.)
-
-    Trump control is:
-        score = 0
-        +2 if has trump Ace
-        +1 per additional trump
-        trump_control = score >= 3 or (perspective.get_talon_size() <= 2 and trump_score >= 2)
     """
     def __init__(self, num_samples: int, depth: int, rand: random.Random, name: Optional[str] = None) -> None:
         """
@@ -38,41 +32,54 @@ class Bot3(Bot):
         self.delegate_phase2 = AlphaBetaBot()
 
 
+    @staticmethod
+    def rank_value(rank: str) -> int:
+        return {"JACK": 2, "QUEEN": 3, "KING": 4, "TEN": 10, "ACE": 11}[rank]
+
+
+    def has_trump_control(self, perspective: PlayerPerspective) -> bool:
+        trump = perspective.get_trump_suit()
+        score = 0
+        for card in perspective.get_hand().get_cards():
+            if str(card.suit) == str(trump):
+                if str(card.rank) == "ACE":
+                    score += 2
+                else:
+                    score += 1
+        return score >= 3 or (perspective.get_talon_size() <= 2 and score >= 2)
+
+
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
         if perspective.get_phase() == GamePhase.ONE:
             if not perspective.am_i_leader():
-                valid_moves = [move.as_regular_move() for move in perspective.valid_moves() if move.is_regular_move()]
-                
-                trump_score = 0
-                trump_control = False
-                minimal_card_value_move = None
-                minimal_card_value = 100
-                minimal_winning_card_value_move = None
-                minimal_winning_card_value = 100
-                rank_values = {"JACK" : 2, "QUEEN" : 3, "KING" : 4, "TEN" : 10, "ACE" : 11}
+                regular_moves = [move.as_regular_move() for move in perspective.valid_moves() if move.is_regular_move()]
+                trump = perspective.get_trump_suit()
+                trump_control = self.has_trump_control(perspective)
 
-                for move in valid_moves:
-                    if str(move.card.suit) == str(perspective.get_trump_suit()):
-                        if str(move.card.rank) == "ACE":
-                            trump_score += 2
-                        else:
-                            trump_score += 1
-                    else:
-                        if rank_values[str(move.card.rank)] < minimal_card_value:
-                            minimal_card_value = rank_values[str(move.card.rank)]
-                            minimal_card_value_move = move
-                        if rank_values[str(move.card.rank)] < minimal_winning_card_value and rank_values[str(move.card.rank)] > rank_values[str(leader_move.cards[0].rank)]:
-                            minimal_winning_card_value = rank_values[str(move.card.rank)]
-                            minimal_winning_card_value_move = move
+                lowest = None
+                lowest_val = 100
+                winning = None
+                winning_val = 100
 
-                if trump_score >= 3 or (perspective.get_talon_size() <= 2 and trump_score >= 2):
-                    trump_control = True
+                lead_card = leader_move.cards[0]
+
+                for move in regular_moves:
+                    val = self.rank_value(str(move.card.rank))
+                    if str(move.card.suit) != str(trump):
+                        if val < lowest_val:
+                            lowest_val = val
+                            lowest = move
+                        if (str(move.card.suit) == str(lead_card.suit) and
+                            val > self.rank_value(str(lead_card.rank)) and
+                            val < winning_val):
+                            winning_val = val
+                            winning = move
 
                 if trump_control:
-                    if minimal_winning_card_value_move != None:
-                        return minimal_winning_card_value_move
-                    else:
-                        return minimal_card_value_move
+                    if winning:
+                        return winning
+                    if lowest:
+                        return lowest
 
             return self.delegate_phase1.get_move(perspective, leader_move)
         elif perspective.get_phase() == GamePhase.TWO:
