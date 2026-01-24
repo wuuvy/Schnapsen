@@ -32,10 +32,30 @@ class Bot5(Bot):
 
     @staticmethod
     def rank_value(rank: str) -> int:
+        """
+        rank_value is a utility function that return the corresponding value for a given rank
+        
+        :param rank: The rank as a string
+        :return: The int value associated to that rank
+        """
         return {"JACK": 2, "QUEEN": 3, "KING": 4, "TEN": 10, "ACE": 11}[rank]
 
 
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
+        """
+        get_move is a function that returns the move to be played.
+        In phase 1:
+                Heuristic:
+                    When there are two or less cards remaining in the talon and you are following, play to ensure you lead the next trick, if possible.
+                Fallback when no move found in compliance with the heuristic:
+                    Rdeep bot
+        In phase 2:
+            Alpha-Beta bot
+
+        :param perspective: The perspective from which we want to decide what move to play (PlayerPerspective to prevent accessing info that the bot can not)
+        :param leader_move: Optional variable that takes a Move value (the move played by the leader) when the bot is following a trick
+        :return: The move to be played by the bot
+        """
         if perspective.get_phase() == GamePhase.ONE:
             valid_moves = [move for move in perspective.valid_moves()]
             trump = perspective.get_trump_suit()

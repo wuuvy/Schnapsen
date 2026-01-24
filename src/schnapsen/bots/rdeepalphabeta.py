@@ -29,6 +29,17 @@ class RdeepAlphaBeta(Bot):
 
 
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
+        """
+        get_move is a function that returns the move to be played.
+        In phase 1:
+            Rdeep bot
+        In phase 2:
+            Alpha-Beta bot
+
+        :param perspective: The perspective from which we want to decide what move to play (PlayerPerspective to prevent accessing info that the bot can not)
+        :param leader_move: Optional variable that takes a Move value (the move played by the leader) when the bot is following a trick
+        :return: The move to be played by the bot
+        """
         if perspective.get_phase() == GamePhase.ONE:
             return self.delegate_phase1.get_move(perspective, leader_move)
         elif perspective.get_phase() == GamePhase.TWO:

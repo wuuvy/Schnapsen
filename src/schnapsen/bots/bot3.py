@@ -34,10 +34,26 @@ class Bot3(Bot):
 
     @staticmethod
     def rank_value(rank: str) -> int:
+        """
+        rank_value is a utility function that return the corresponding value for a given rank
+        
+        :param rank: The rank as a string
+        :return: The int value associated to that rank
+        """
         return {"JACK": 2, "QUEEN": 3, "KING": 4, "TEN": 10, "ACE": 11}[rank]
 
 
     def has_trump_control(self, perspective: PlayerPerspective) -> bool:
+        """
+        has_trump_control serves to determine whether control of the trump suit has been achieved.
+        Control of the trump suit is considered to be achieved whene score >= 3 or the talon has 2 or less cards and score >= 2
+        The score is calculated by counting trump cards:
+            +2 for trump ace
+            +1 for any other trump card
+
+        :param perspective: The perspective from which we want to see whether we have trump control (PlayerPerspective to prevent accessing info that the bot can not)
+        :return: Bool value of true if there is trump control, otherwise returns false
+        """
         trump = perspective.get_trump_suit()
         score = 0
         for card in perspective.get_hand().get_cards():
@@ -50,6 +66,21 @@ class Bot3(Bot):
 
 
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
+        """
+        get_move is a function that returns the move to be played.
+        In phase 1:
+                Heuristic:
+                    If you have trump control and are following a trick preserve your high cards
+                    (play lowest winning cards other than ten or ace. If that trick can't be won play lowest non-trump card)
+                Fallback when no move found in compliance with the heuristic:
+                    Rdeep bot
+        In phase 2:
+            Alpha-Beta bot
+
+        :param perspective: The perspective from which we want to decide what move to play (PlayerPerspective to prevent accessing info that the bot can not)
+        :param leader_move: Optional variable that takes a Move value (the move played by the leader) when the bot is following a trick
+        :return: The move to be played by the bot
+        """
         if perspective.get_phase() == GamePhase.ONE:
             if not perspective.am_i_leader():
                 regular_moves = [move.as_regular_move() for move in perspective.valid_moves() if move.is_regular_move()]

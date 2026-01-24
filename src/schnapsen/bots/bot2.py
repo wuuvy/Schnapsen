@@ -32,6 +32,20 @@ class Bot2(Bot):
 
 
     def get_move(self, perspective: PlayerPerspective, leader_move: Optional[Move]) -> Move:
+        """
+        get_move is a function that returns the move to be played.
+        In phase 1:
+                Heuristic:
+                    If you can play a marriage and can follow up with a different trump card/an ace, or the marriage is trump, play the marriage
+                Fallback when no move found in compliance with the heuristic:
+                    Rdeep bot
+        In phase 2:
+            Alpha-Beta bot
+
+        :param perspective: The perspective from which we want to decide what move to play (PlayerPerspective to prevent accessing info that the bot can not)
+        :param leader_move: Optional variable that takes a Move value (the move played by the leader) when the bot is following a trick
+        :return: The move to be played by the bot
+        """
         if perspective.get_phase() == GamePhase.ONE:
             valid_moves = [move for move in perspective.valid_moves()]
             trump = perspective.get_trump_suit()

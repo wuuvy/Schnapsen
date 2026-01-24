@@ -6,7 +6,12 @@ from matplotlib.ticker import MultipleLocator
 import numpy as np
 
 
-def plot_score_distribution(test_scores):
+def plot_score_distribution(test_scores: list[list[int]]):
+    """
+    plot_score_distribution serves to represent the game point distribution (columns for the number of times each bot, including the baseline bot, has scored 0, 1, 2 or 3 game points)
+    
+    :param test_scores: List of lists containing the number of points each bot has scored in each game
+    """
     scores = [0, 1, 2, 3]
     num_lists = len(test_scores)
 
@@ -43,7 +48,13 @@ def plot_score_distribution(test_scores):
     plt.show()
 
 
-def plot_winrates(bot_names, winrates):
+def plot_winrates(bot_names: list[str], winrates: list[float]):
+    """
+    plot_winrates serves to present the win rates of each bot as columns in a graph and the win rate of the baseline is represented as a line (threshold) to be reached/surpassed
+    
+    :param bot_names: List of names for the bots corresponding to the appropriate win rates
+    :param winrates: List of win rates for each bot (including the baseline bot) corresponding to the appropriate names
+    """
     plt.figure(figsize=(8,5))
     plt.bar(bot_names[1:], winrates[1:])
     plt.axhline(winrates[0], color="red", linestyle="--", label="Baseline win rate")
@@ -53,7 +64,13 @@ def plot_winrates(bot_names, winrates):
     plt.show()
 
 
-def game_points_test(test_bot_points, baseline_bot_points):
+def game_points_test(test_bot_points: list[int], baseline_bot_points: list[int]):
+    """
+    game_points_test is a function where the mean difference of two samples and the p_value from an independent T-test are calculated and returned as a dictionary
+    
+    :param test_bot_points: points scored by the bot being tested
+    :param baseline_bot_points: points scored by the baseline bot
+    """
     if len(test_bot_points) < 30:
         raise ValueError("Need at least 30 games for statistical significance")
 
@@ -68,7 +85,13 @@ def game_points_test(test_bot_points, baseline_bot_points):
     }
 
 
-def winrate_test(wins, total_games):
+def winrate_test(wins: float, total_games: float):
+    """
+    winrate_test is a function where the win_rate and the p_value from a binomial test are calculated and returned as a dictionary
+    
+    :param wins: number of games won by the tested bot
+    :param total_games: number of games being played by the tested bot
+    """
     result = binomtest(wins, total_games, p=0.5, alternative="greater")
     return {
         "win_rate": wins / total_games,
