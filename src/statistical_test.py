@@ -60,6 +60,10 @@ def plot_winrates(bot_names: list[str], winrates: list[float]):
     plt.axhline(winrates[0], color="red", linestyle="--", label="Baseline win rate")
     plt.ylabel("Win Rate")
     plt.title("Win Rate vs Baseline")
+    plt.gca().yaxis.set_major_locator(MultipleLocator(0.1))
+    plt.gca().yaxis.set_minor_locator(MultipleLocator(0.02))
+    plt.grid(which='major', axis='y', linestyle='--', linewidth=0.8, alpha=0.7)
+    plt.grid(which='minor', axis='y', linestyle=':', linewidth=0.5, alpha=0.5)
     plt.legend()
     plt.show()
 
