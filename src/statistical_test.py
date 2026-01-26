@@ -89,14 +89,14 @@ def game_points_test(test_bot_points: list[int], baseline_bot_points: list[int])
     }
 
 
-def winrate_test(wins: float, total_games: float):
+def winrate_test(wins: float, total_games: float, baseline_win_rate: float):
     """
     winrate_test is a function where the win_rate and the p_value from a binomial test are calculated and returned as a dictionary
     
     :param wins: number of games won by the tested bot
     :param total_games: number of games being played by the tested bot
     """
-    result = binomtest(wins, total_games, p=0.5, alternative="greater")
+    result = binomtest(wins, total_games, p=baseline_win_rate, alternative="greater")
     return {
         "win_rate": wins / total_games,
         "p_value": result.pvalue
@@ -125,10 +125,14 @@ for i in range(6):
 
     total_games = len(test_score)
 
-    game_points_stats = game_points_test(test_score, test_scores[0])
-    win_stats = winrate_test(test_wins, total_games)
+    if i == 0:
+        winrates.append(test_wins / total_games)
 
-    winrates.append(win_stats["win_rate"])
+    game_points_stats = game_points_test(test_score, test_scores[0])
+    win_stats = winrate_test(test_wins, total_games, winrates[0])
+
+    if i > 0:
+        winrates.append(win_stats["win_rate"])
     bot_names.append(f"Bot{i}")
 
     print("=" * 47)
@@ -145,4 +149,4 @@ for i in range(6):
 
 
 plot_score_distribution(test_scores)
-plot_winrates(bot_names, winrates)
+plot_winrates(bot_names, winrates, )
